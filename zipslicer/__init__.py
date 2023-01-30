@@ -62,8 +62,9 @@ dtype_sizes = {
     torch.int16: 2,
     torch.uint8: 1,
     torch.int8: 1,
-    torch.quint8: 1,
-    torch.qint8: 1,
+    torch.bool: 1,
+    # torch.quint8: 1, # TODO
+    # torch.qint8: 1,
 }
 
 dtype_by_name = {
@@ -76,8 +77,9 @@ dtype_by_name = {
     "torch.int16": torch.int16,
     "torch.uint8": torch.uint8,
     "torch.int8": torch.int8,
-    "torch.quint8": torch.quint8,
-    "torch.qint8": torch.qint8,
+    "torch.bool": torch.bool,
+    # "torch.quint8": torch.quint8,
+    # "torch.qint8": torch.qint8,
 }
 
 
