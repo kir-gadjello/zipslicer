@@ -6,6 +6,10 @@ name: Lint and Test Python package
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'zipslicer/**'
+      - 'tests/**'
+      - 'examples/**'
   pull_request:
     branches: [ "main" ]
 

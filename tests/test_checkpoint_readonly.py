@@ -1,6 +1,9 @@
 # Copyright (c) 2023- Kirill Gadjello.
 # See LICENSE for details (basically it uses part of PyTorch sourcecode and is licensed under the same conditions)
 
+# Run it like this (from zipslicer repo root directory):
+# python ./tests/test_checkpoint_readonly.py 'path_to_your_checkpoint.pth'
+
 import os
 import sys
 import time
@@ -22,7 +25,9 @@ def __test_incremental_load(ckpt=None, seed=1337):
 
     print_note = False
     if ckpt is None:
-        assert len(sys.argv) > 1
+        if len(sys.argv) <= 1:
+            print("Usage:\n\tpython ./tests/test_checkpoint_readonly.py 'path_to_your_checkpoint.pth'")
+            sys.exit(-1)
         ckpt = sys.argv[1]
         print_note = True
 
