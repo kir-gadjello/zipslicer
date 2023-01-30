@@ -3,14 +3,16 @@
 
 import os
 from functools import reduce
-import torch
 import types
-import custom_load as cl
 from collections import OrderedDict
-import weights_only_unpickler as _weights_only_unpickler
 import pickle
 import zipfile
 import struct
+
+import torch
+
+from . import custom_load
+from . import weights_only_unpickler
 
 
 def create_storage(buf):
@@ -345,10 +347,10 @@ def load(ckpt, map_location="cpu", debug=False, dtype=None):
     assert os.path.isfile(ckpt)
 
     tensors_meta = None
-    with cl._open_zipfile_reader(open(ckpt, "rb")) as zf:
+    with custom_load._open_zipfile_reader(open(ckpt, "rb")) as zf:
         try:
-            tensors_meta = cl.custom_load(
-                zf, torch.device(map_location), _weights_only_unpickler
+            tensors_meta = custom_load._custom_load(
+                zf, torch.device(map_location), weights_only_unpickler
             )
         except Exception as e:
             raise pickle.UnpicklingError(

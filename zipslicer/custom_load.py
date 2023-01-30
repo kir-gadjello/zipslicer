@@ -621,7 +621,7 @@ def dprint(*args):
         print(*args)
 
 
-def custom_load(
+def _custom_load(
     zip_file, map_location, pickle_module, pickle_file="data.pkl", **pickle_load_args
 ):
     # restore_location = _get_restore_location(map_location)
