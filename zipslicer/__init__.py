@@ -267,6 +267,9 @@ class LazyStateDict(OrderedDict):
         if k not in self.tensors:
             raise KeyError(k)
 
+        if k.endswith("._extra_state"):
+            return None
+
         dtype = self.tensors[k]["args"][0]["dtype"]
         dtype = dtype_by_name[dtype]
         size = torch.Size(self.tensors[k]["args"][2])
@@ -280,6 +283,11 @@ class LazyStateDict(OrderedDict):
     def validate_tensor_ref(self, k):
         if k not in self.tensors:
             raise KeyError(k)
+
+        # Allow free-form ._extra_state for now: https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.get_extra_state
+        if k.endswith("._extra_state"):
+            assert isinstance(self.tensors[k], dict)
+            return True
 
         ref = self.tensors[k]
         assert ref["type"] == "stub_obj"
@@ -295,9 +303,14 @@ class LazyStateDict(OrderedDict):
 
         assert isinstance(dtype, torch.dtype)
 
+        return True
+
     def reform_tensor(self, k):
         if k not in self.tensors:
             raise KeyError(k)
+
+        if k.endswith("._extra_state"):
+            return self.tensors[k]
 
         ref = self.tensors[k]
         storage_args = ref["args"][0]

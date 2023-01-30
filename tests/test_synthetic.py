@@ -70,6 +70,25 @@ def test_nn_sdict():
     os.unlink(FNAME)
 
 
+def test_nn_sdict_w_extra_state():
+    FNAME = "test_nn_sdict_w_extra_state.pth"
+    torch.manual_seed(seed)
+
+    class CustomLinear(torch.nn.Linear):
+        def get_extra_state(self):
+            return dict(
+                a=random.randint(1, 2**64 - 1), b="this is extra state", c=[1, 2, 3]
+            )
+
+    network = torch.nn.ModuleList([CustomLinear(1000, 2000), CustomLinear(2000, 2000)])
+
+    sdict = network.state_dict()
+
+    torch.save(sdict, FNAME)
+    __test_incremental_load(ckpt=FNAME)
+    os.unlink(FNAME)
+
+
 def test_nn_pickle_raises():
     FNAME = "test_nn_pickle.pth"
     torch.manual_seed(seed)

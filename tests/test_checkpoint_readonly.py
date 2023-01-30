@@ -26,7 +26,9 @@ def __test_incremental_load(ckpt=None, seed=1337):
     print_note = False
     if ckpt is None:
         if len(sys.argv) <= 1:
-            print("Usage:\n\tpython ./tests/test_checkpoint_readonly.py 'path_to_your_checkpoint.pth'")
+            print(
+                "Usage:\n\tpython ./tests/test_checkpoint_readonly.py 'path_to_your_checkpoint.pth'"
+            )
             sys.exit(-1)
         ckpt = sys.argv[1]
         print_note = True
@@ -58,6 +60,10 @@ def __test_incremental_load(ckpt=None, seed=1337):
     print("Checking tensor metadata correspondence")
     for k, v in sdict.items():
         meta = lazy_sdict.get_meta(k)
+        if k.endswith("._extra_state") and not isinstance(v, torch.Tensor):
+            assert meta is None
+            continue
+
         assert meta.shape == v.shape
         assert meta.size() == v.size()
         assert meta.dtype == v.dtype
@@ -78,9 +84,14 @@ def __test_incremental_load(ckpt=None, seed=1337):
         t0 = time.time_ns()
         T = sdict[k]
         LT = lazy_sdict[k]
-        assert T.dtype == LT.dtype
-        assert T.shape == LT.shape
-        assert torch.allclose(T, LT)
+
+        if k.endswith("._extra_state") and not isinstance(T, torch.Tensor):
+            assert T == LT
+        else:
+            assert T.dtype == LT.dtype
+            assert T.shape == LT.shape
+            assert torch.allclose(T, LT)
+
         dt = time.time_ns() - t0
         print(f"{ok_green} in {round(dt/1e6, 2)}ms")
 
