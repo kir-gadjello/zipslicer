@@ -1,5 +1,5 @@
 # Copyright (c) 2023- Kirill Gadjello with most input coming from Pytorch contributors
-# See LICENSE for details (basically it uses part of PyTorch sourcecode and is licensed under the same conditions)
+# See LICENSE for details (basically it uses parts of PyTorch sourcecode and is licensed under the same conditions)
 
 # Unpickler restricted to loading only state dicts
 # Restrict constructing types to a list defined in _get_allowed_globals()

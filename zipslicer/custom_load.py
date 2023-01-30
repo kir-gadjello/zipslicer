@@ -1,5 +1,5 @@
 # Copyright (c) 2023- Kirill Gadjello with most input coming from Pytorch contributors
-# See LICENSE for details (basically it uses part of PyTorch sourcecode and is licensed under the same conditions)
+# See LICENSE for details (basically it uses parts of PyTorch sourcecode and is licensed under the same conditions)
 
 import difflib
 import os

@@ -84,7 +84,7 @@ def test_nn_pickle_raises():
         zipslicer.load(FNAME)
     except Exception as e:
         assert (
-            "Error at zipslicer.load bootstrap stage, your torch pickle checkpoint is likely to complex for the lightweight loader to interpret. Make sure your network was saved as a state_dict, instead of general-purpose network pickle"
+            "Error at zipslicer.load bootstrap stage, your torch pickle checkpoint is likely too complex for the lightweight loader to interpret. Make sure your network was saved as a state_dict, instead of general-purpose network pickle"
             in str(e)
         )
 

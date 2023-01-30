@@ -1,5 +1,5 @@
 # Copyright (c) 2023- Kirill Gadjello.
-# See LICENSE for details (basically it uses part of PyTorch sourcecode and is licensed under the same conditions)
+# See LICENSE for details (basically it uses parts of PyTorch sourcecode and is licensed under the same conditions)
 
 import os
 from functools import reduce
@@ -147,9 +147,8 @@ def load_tensor_partial(
 class LazyStateDict(OrderedDict):
     def __init__(
         self,
-        default_factory=None,
         tensors=None,
-        extras=None,  # TODO
+        extras=None,  # TODO: we might have to handle extra data
         untie_weights=False,  # TODO
         map_location="cpu",
         zipfile=None,
@@ -162,7 +161,6 @@ class LazyStateDict(OrderedDict):
         super().__init__(*args, **kwargs)
 
         self.__lazy = True
-        self.default_factory = default_factory
         self.tensors = tensors
         self.zipfile = zipfile
         self.fh = fh
@@ -220,7 +218,7 @@ class LazyStateDict(OrderedDict):
 
     def values(self):
         raise Exception(
-            "LazyStateDict isn't meant for loading all values at once due to RAM constraints"
+            "LazyStateDict isn't meant for loading all values at once due to RAM constraints, reconsider your usage pattern"
         )
 
     def items(self):
@@ -281,13 +279,16 @@ class LazyStateDict(OrderedDict):
         # TODO stride correctness checks
 
         dsize = dtype_sizes[dtype]
+        numel = (
+            reduce(lambda x, y: x * y, size) if size is not None and len(size) else 1
+        )
 
         storage = load_tensor_partial(
             self.zipfile,
             self.fh,
             self.offset_index,
             dtype=dtype,
-            numel=reduce(lambda x, y: x * y, size),
+            numel=numel,
             key=storage_args["key"],
             location=self.map_location,
             offset=storage_offset * dsize,
@@ -315,7 +316,7 @@ def load(ckpt, map_location="cpu", debug=False, dtype=None):
             )
         except Exception as e:
             raise pickle.UnpicklingError(
-                f"Error at zipslicer.load bootstrap stage, your torch pickle checkpoint is likely to complex for the lightweight loader to interpret. Make sure your network was saved as a state_dict, instead of general-purpose network pickle. Exception was: {e}"
+                f"Error at zipslicer.load bootstrap stage, your torch pickle checkpoint is likely too complex for the lightweight loader to interpret. Make sure your network was saved as a state_dict, instead of general-purpose network pickle. Exception was: {e}"
             )
 
     zipfile_h = zipfile.ZipFile(ckpt, "r", allowZip64=True)
