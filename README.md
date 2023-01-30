@@ -36,7 +36,7 @@ Run this example and unit-tests:
 
 `python examples/example_resnet18.py`
 
-`pytest-3 -o log_cli=true --capture=tee-sys -p no:asyncio`
+`pytest -o log_cli=true --capture=tee-sys -p no:asyncio`
 
 Test your checkpoint for compatibility:
 
