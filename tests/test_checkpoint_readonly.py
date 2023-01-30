@@ -31,7 +31,7 @@ def __test_incremental_load(ckpt=None, seed=1337):
         print(f'Using "{cyellow}{ckpt}{creset}" in {cgreen}readonly{creset} mode')
         print("=" * (os.get_terminal_size().columns))
         print(
-            f"Note: this test loads two copies of the checkpoint, one using standard torch.load and the other using zipslicer. You need enough CPU RAM to fit both, or you risk unresponsive behavior and massive swapping from your machine."
+            "Note: this test loads two copies of the checkpoint, one using standard torch.load and the other using zipslicer. You need enough CPU RAM to fit both, or you risk unresponsive behavior and massive swapping from your machine."
         )
         print("=" * (os.get_terminal_size().columns))
 

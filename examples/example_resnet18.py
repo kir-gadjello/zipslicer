@@ -2,7 +2,7 @@ import torch
 
 try:
     import zipslicer
-except:
+except Exception:
     import sys
 
     sys.path.append("./zipslicer")
