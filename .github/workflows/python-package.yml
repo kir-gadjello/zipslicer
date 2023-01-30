@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Python package
+name: Lint and Test Python package
 
 on:
   push:
@@ -17,11 +17,15 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11"]
+        torch-version: ["1.11.0", "stable"]
+        exclude: # there is no easily available older torch build for newer python
+            - python-version: "3.11"
+              torch-version: "1.11.0"
 
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install testing and linting tools
@@ -34,10 +38,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 --ignore 'E501 W503 E203 E402 W293' . --count --exit-zero --max-complexity=40 --max-line-length=127 --statistics
-    - name: Install dependencies, testing with cpu-only pytorch to save CI time
+    - name: Install dependencies, testing with cpu-only pytorch to save CI time, torch==${{matrix.torch-version}}
       run: |
-        python -m pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+        if [[ "stable" == ${{matrix.torch-version}} ]]; then
+            python -m pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+        else
+            python -m pip install 'torch==${{matrix.torch-version}}+cpu' --extra-index-url https://download.pytorch.org/whl/cpu
+        fi
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        pytest -o log_cli=true --capture=tee-sys -p no:asyncio .
+        PYTHONPATH="." pytest -o log_cli=true --capture=tee-sys -p no:asyncio .
