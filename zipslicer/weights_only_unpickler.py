@@ -98,21 +98,28 @@ def _get_allowed_globals():
     for k in ["torch.Tensor", "torch.nn.parameter.Parameter"]:
         rc[k] = make_stub_cls(k)
 
+    possible_dtypes = [
+        "complex32",
+        "complex64",
+        "complex128",
+        "float16",
+        "float32",
+        "float64",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+    ]
+
+    avail_dtypes = []
+    for dt in possible_dtypes:
+        if hasattr(torch, dt):
+            avail_dtypes.append(getattr(torch, dt))
+
     # dtype
-    for t in [
-        torch.complex32,
-        torch.complex64,
-        torch.complex128,
-        torch.float16,
-        torch.float32,
-        torch.float64,
-        torch.int8,
-        torch.int16,
-        torch.int32,
-        torch.int64,
-    ]:
+    for t in avail_dtypes:
         rc[str(t)] = t
-        # rc[str(t)] = make_stub(str(t))
+
     # Tensor classes
     for tt in torch._tensor_classes:
         rc[f"{tt.__module__}.{tt.__name__}"] = tt

@@ -12,6 +12,42 @@ import pickle
 import zipfile
 import struct
 
+
+def create_storage(buf):
+    if hasattr(torch, "UntypedStorage"):
+        return torch.UntypedStorage.from_buffer(buf, dtype=torch.uint8)
+    elif hasattr(torch, "_UntypedStorage"):
+        # fallback for older torch versions which don't have UntypedStorage
+        return torch._UntypedStorage.from_buffer(buf, dtype=torch.uint8)
+    else:
+        # fallback for older torch versions which don't have _UntypedStorage
+        return torch.ByteStorage.from_buffer(buf)
+
+
+def get_typed_storage(backing_storage, dtype):
+    # TODO: Upstream pytorch might change the semantics here eventually
+    if hasattr(torch, "TypedStorage"):
+        return torch.storage.TypedStorage(wrap_storage=backing_storage, dtype=dtype)
+    else:
+        legacy_storage_types = {
+            torch.bfloat16: torch.BFloat16Storage,
+            torch.half: torch.HalfStorage,
+            torch.float: torch.FloatStorage,
+            torch.double: torch.DoubleStorage,
+            torch.int8: torch.CharStorage,
+            torch.uint8: torch.ByteStorage,
+            torch.short: torch.ShortStorage,
+            torch.int: torch.IntStorage,
+            torch.long: torch.LongStorage,
+            torch.bool: torch.BoolStorage,
+        }
+        if dtype not in legacy_storage_types:
+            raise Exception(
+                "Failed to create Torch Storage object, your Torch version is probably too old"
+            )
+        return legacy_storage_types[dtype](wrap_storage=backing_storage)
+
+
 # ZIP "local file header" structure, magic number, size, and indices
 # (section V.A in the format document)
 structFileHeader = "<4s2B4HL2L2H"
@@ -140,10 +176,8 @@ def load_tensor_partial(
             zf.seek(offset)
             bbuffer = zf.read(dsize * numel)
 
-    storage = torch.UntypedStorage.from_buffer(bbuffer, dtype=torch.uint8)
-
-    # TODO: Upstream pytorch might change the semantics here eventually
-    return torch.storage.TypedStorage(wrap_storage=storage, dtype=dtype)
+    storage = create_storage(bbuffer)
+    return get_typed_storage(storage, dtype)
 
 
 class LazyStateDict(OrderedDict):

@@ -24,6 +24,10 @@ from torch.storage import _get_dtype_from_pickle_storage_type
 from typing import Any, BinaryIO, Callable, cast, Dict, Optional, Union, IO, Type
 from typing_extensions import TypeAlias
 
+TORCH_UNTYPED_STORAGE_CLS = (
+    torch.UntypedStorage if hasattr(torch, "UntypedStorage") else torch.ByteStorage
+)
+
 DEFAULT_PROTOCOL = 2
 
 LONG_SIZE = struct.Struct("=l").size
@@ -305,7 +309,7 @@ def _load(
         name = f"data/{key}"
 
         storage = (
-            zip_file.get_storage_from_record(name, numel, torch.UntypedStorage)
+            zip_file.get_storage_from_record(name, numel, TORCH_UNTYPED_STORAGE_CLS)
             .storage()
             .untyped()
         )
@@ -324,7 +328,7 @@ def _load(
             typename == "storage"
         ), f"Unknown typename for persistent_load, expected 'storage' but got '{typename}'"
         storage_type, key, location, numel = data
-        if storage_type is torch.UntypedStorage:
+        if storage_type is TORCH_UNTYPED_STORAGE_CLS:
             dtype = torch.uint8
         else:
             dtype = storage_type.dtype
@@ -455,7 +459,7 @@ def _legacy_load(f, map_location, pickle_module, **pickle_load_args):
                     args = pickle_module.load(f, **pickle_load_args)
                     key, location, storage_type = args
                     dtype = storage_type.dtype
-                    obj = cast(Storage, torch.UntypedStorage)._new_with_file(
+                    obj = cast(Storage, TORCH_UNTYPED_STORAGE_CLS)._new_with_file(
                         f, torch._utils._element_size(dtype)
                     )
                     obj = restore_location(obj, location)
@@ -523,7 +527,7 @@ def _legacy_load(f, map_location, pickle_module, **pickle_load_args):
             nbytes = numel * torch._utils._element_size(dtype)
 
             if root_key not in deserialized_objects:
-                obj = cast(Storage, torch.UntypedStorage(nbytes))
+                obj = cast(Storage, TORCH_UNTYPED_STORAGE_CLS(nbytes))
                 obj._torch_load_uninitialized = True
                 # TODO: Once we decide to break serialization FC, we can
                 # stop wrapping with TypedStorage
@@ -628,7 +632,7 @@ def custom_load(
         name = f"data/{key}"
 
         # storage = (
-        #     zip_file.get_storage_from_record(name, numel, torch.UntypedStorage)
+        #     zip_file.get_storage_from_record(name, numel, TORCH_UNTYPED_STORAGE_CLS)
         #     .storage()
         #     .untyped()
         # )
@@ -662,7 +666,7 @@ def custom_load(
             typename == "storage"
         ), f"Unknown typename for persistent_load, expected 'storage' but got '{typename}'"
         storage_type, key, location, numel = data
-        if storage_type is torch.UntypedStorage:
+        if storage_type is TORCH_UNTYPED_STORAGE_CLS:
             dtype = torch.uint8
         else:
             dtype = storage_type.dtype
