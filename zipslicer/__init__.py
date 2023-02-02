@@ -193,6 +193,7 @@ class LazyStateDict(OrderedDict):
         fh=None,
         debug=False,
         dtype=None,
+        cache_tensors=False,
         *args,
         **kwargs,
     ):
@@ -205,6 +206,7 @@ class LazyStateDict(OrderedDict):
         self.offset_index = {}
         self.map_location = map_location
         self.untie_weights = untie_weights
+        self.cache_tensors = cache_tensors
         self.debug = debug
         self.dtype = dtype
         self.tcache = {}
@@ -246,7 +248,8 @@ class LazyStateDict(OrderedDict):
             return self.tcache[k]
         elif k in self.tensors:
             ret = self.reform_tensor(k)
-            self.tcache[k] = ret
+            if self.cache_tensors:
+                self.tcache[k] = ret
             return ret
         else:
             raise KeyError(k)
@@ -355,7 +358,7 @@ class LazyStateDict(OrderedDict):
         return ret
 
 
-def load(ckpt, map_location="cpu", debug=False, dtype=None):
+def load(ckpt, map_location="cpu", debug=False, dtype=None, cache_tensors=False):
     assert map_location == "cpu"
     assert os.path.isfile(ckpt)
 
@@ -379,4 +382,5 @@ def load(ckpt, map_location="cpu", debug=False, dtype=None):
         map_location=map_location,
         debug=debug,
         dtype=dtype,
+        cache_tensors=cache_tensors,
     )
