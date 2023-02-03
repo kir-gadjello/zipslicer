@@ -182,7 +182,28 @@ def load_tensor_partial(
     return get_typed_storage(storage, dtype)
 
 
+# This class is meant to behave in a functionally similar manner to
+# the conventional PyTorch state_dict objects (instances of Python's OrderedDict).
+# It should be noted that as the docs say in https://peps.python.org/pep-0372/
+# "subclassing dict is a non-trivial task", and this implementation doesn't try
+# to be perfect. But it should work for pytorch checkpoint access, see tests.
+# Note that creation of new keys is not yet supported.
+# Caching isn't meant to be enabled just yet, but tcache member is used
+# for storage of some k-v pairs some apps may assign to state_dict object.
+# Currently, this class is meant to be created inside zipslicer.load method
 class LazyStateDict(OrderedDict):
+    """
+    A Lazy state_dict produced by zipslicer https://github.com:kir-gadjello/zipslicer
+    This object should be used to access PyTorch checkpoints in an incremental way.
+    If caching is disabled (by default) this object doesn't force the tensors and
+    Torch Storage objects it created to stay in RAM - you can delete them safely.
+    Updating and deleting the values in-place (without saving) is supported.
+    Creation of new keys isn't supported just yet.
+
+    Special methods: there is a 'get_meta' method for accessing torch tensor shapes
+    for the available keys without loading the whole tensor from disk.
+    """
+
     def __init__(
         self,
         tensors=None,
@@ -254,8 +275,16 @@ class LazyStateDict(OrderedDict):
         else:
             raise KeyError(k)
 
+    def __contains__(self, k):
+        return k in self.tcache.keys() or k in self.tensors.keys()
+
     def keys(self):
-        return self.tensors.keys()
+        # Fast path, cache is disabled and no keys were assigned
+        if len(self.tcache) == 0:
+            return self.tensors.keys()
+        else:
+            # A naive implementation, but should suffice
+            return list(set(self.tcache.keys()) + set(self.tensors.keys()))
 
     def values(self):
         raise Exception(
@@ -358,7 +387,19 @@ class LazyStateDict(OrderedDict):
         return ret
 
 
-def load(ckpt, map_location="cpu", debug=False, dtype=None, cache_tensors=False):
+def load(
+    ckpt,
+    map_location="cpu",
+    dtype=None,
+    cache_tensors=False,
+    debug=False,
+):
+    """
+    Should behave similarly to torch.load, but operates incrementally.
+    Loads accessed tensors on the fly.
+    ckpt should be a valid file path for now
+    cache_tensors should be False
+    """
     assert map_location == "cpu"
     assert os.path.isfile(ckpt)
 
