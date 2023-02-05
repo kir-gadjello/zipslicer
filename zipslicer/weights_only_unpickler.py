@@ -127,17 +127,18 @@ def _get_allowed_globals():
     for ts in torch._storage_classes:
         rc[f"{ts.__module__}.{ts.__name__}"] = ts
     # Rebuild functions
-    for f in [
-        torch._utils._rebuild_parameter,
-        torch._utils._rebuild_tensor,
-        torch._utils._rebuild_tensor_v2,
-        torch._utils._rebuild_sparse_tensor,
-        torch._utils._rebuild_meta_tensor_no_storage,
-        torch._utils._rebuild_sparse_csr_tensor,
-        torch._utils._rebuild_qtensor,
+    for fname in [
+        "_rebuild_parameter",
+        "_rebuild_tensor",
+        "_rebuild_tensor_v2",
+        "_rebuild_sparse_tensor",
+        "_rebuild_meta_tensor_no_storage",
+        "_rebuild_sparse_csr_tensor",
+        "_rebuild_qtensor",
     ]:
-        # rc[f"torch._utils.{f.__name__}"] = f
-        rc[f"torch._utils.{f.__name__}"] = make_stub(f.__name__)
+        if hasattr(torch._utils, fname):
+            f = getattr(torch._utils, fname)
+            rc[f"torch._utils.{f.__name__}"] = make_stub(f.__name__)
 
     return rc
 
