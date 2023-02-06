@@ -5,8 +5,7 @@
 name: Deploy Python package to PyPI
 
 on:
-  push:
-    branches: [ "main" ]
+  release:
     tags:
       - '*'
 
