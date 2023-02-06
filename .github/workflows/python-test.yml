@@ -4,6 +4,7 @@
 name: Lint and Test Python package
 
 on:
+  workflow_dispatch:
   workflow_call:  # allow this workflow to be called from other workflows
   push:
     branches: [ "main" ]
