@@ -1,5 +1,6 @@
 # *ZIPSLICER* 📁✂️
-![Build](https://github.com/kir-gadjello/zipslicer/actions/workflows/python-package.yml/badge.svg)
+[![Lint and Test Python package](https://github.com/kir-gadjello/zipslicer/actions/workflows/python-test.yml/badge.svg)](https://github.com/kir-gadjello/zipslicer/actions/workflows/python-test.yml)
+[![Published to PyPI](https://github.com/kir-gadjello/zipslicer/actions/workflows/pypi-deploy.yml/badge.svg)](https://github.com/kir-gadjello/zipslicer/actions/workflows/pypi-deploy.yml)
 
 A library for incremental loading of large PyTorch checkpoints<br>
 [Read a blogpost introduction by yours truly](https://kir-gadjello.github.io/zipslicer)

@@ -1,0 +1,28 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# Then it will deploy the package to PyPI
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Deploy Python package to PyPI
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - '*'
+
+jobs:
+  tests:
+    uses: "./.github/workflows/python-test.yml"
+  publish:
+    name: publish
+    needs: [tests]  # require tests to pass before deploy runs
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - name: Publish Python Package
+      uses: mariamrf/py-package-publish-action@v1.1.0
+      with:
+        python_version: '3.10.0'
+      env:
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        TWINE_USERNAME: __token__

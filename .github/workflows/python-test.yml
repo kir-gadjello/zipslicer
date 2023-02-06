@@ -4,6 +4,7 @@
 name: Lint and Test Python package
 
 on:
+  workflow_call:  # allow this workflow to be called from other workflows
   push:
     branches: [ "main" ]
     paths:
@@ -14,8 +15,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
