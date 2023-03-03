@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 python_min_version = (3, 8, 0)
 version_range_max = 12
@@ -12,7 +12,7 @@ setup(
     name="zipslicer",
     version=__version__,
     description="A library for efficient incremental access to tensors stored in PyTorch checkpoints",
-    py_modules=["zipslicer"],
+    packages=["zipslicer"],
     install_requires=["torch >= 1.10.0"],
     extras_require={
         "dev": [
